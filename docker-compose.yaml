@@ -1,0 +1,48 @@
+services:
+  web2:
+    build: ./wp1
+    image: miwordpress:1.0
+    ports:
+      - "8082:80"
+#verificar el nombre./wp1 para no tener problemas con los servicios 
+    volumes:
+      - ./wp1:/var/www/html
+      - ./wp1/php.ini:/usr/local/etc/php/conf.d/php.ini
+    networks:
+      - wpsite
+
+
+  dbmy:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: wordpress
+    networks:
+      - wpsite
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./wp1/mysqlcnf/my.cnf:/etc/mysql/conf.d/my.cnf
+
+
+  phpmyadmin:
+    image: phpmyadmin
+    depends_on:
+      - dbmy
+    restart: always
+    ports:
+      - "8083:80"
+    environment:
+      PMA_HOST: dbmy
+      MYSQL_ROOT_PASSWORD: wordpress
+    networks:
+      - wpsite
+#Cuidado con las networks a la hora de hacer multiples despliegues
+networks:
+  wpsite:
+#Cuidado con las volumenes para los multiples despliegues cambia
+volumes:
+  db_data:
+  
